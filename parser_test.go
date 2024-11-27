@@ -16,6 +16,10 @@ func TestUnmarshal(t *testing.T) {
 	t.Skip("not implemented")
 }
 
+func TestUnmarshalOrEmpty(t *testing.T) {
+	t.Skip("not implemented")
+}
+
 func TestInitEnvFrom(t *testing.T) {
 	key01 := "DSN_INJECTOR_TEST_KEY_01"
 	key02 := "DSN_INJECTOR_TEST_KEY_02"

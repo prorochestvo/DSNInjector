@@ -27,7 +27,7 @@ func Marshal(dsm DataSource) (string, error) {
 }
 
 // Unmarshal reads environment variable and returns DataSource
-func Unmarshal(key string, defaultValue ...string) DataSource {
+func Unmarshal(key string, defaultValue ...string) (DataSource, error) {
 	env, exists := os.LookupEnv(key)
 	if !exists && len(defaultValue) > 0 {
 		env = strings.Join(defaultValue, ";")
@@ -35,15 +35,24 @@ func Unmarshal(key string, defaultValue ...string) DataSource {
 
 	env = strings.TrimSpace(env)
 	if env == "" {
-		return nil
+		return nil, fmt.Errorf("could not recognize configuration")
 	}
 
-	cfn, err := Parse(env)
+	dns, err := Parse(env)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return cfn
+	return dns, nil
+}
+
+// UnmarshalOrEmpty reads environment variable and returns DataSource or empty DataSource
+func UnmarshalOrEmpty(key string, defaultValue ...string) DataSource {
+	dsn, err := Unmarshal(key, defaultValue...)
+	if err != nil {
+		dsn = &DataSourceMapper{}
+	}
+	return dsn
 }
 
 // InitEnvFrom reads environment variables from the file and sets them
@@ -61,7 +70,7 @@ func InitEnvFrom(filePaths ...string) error {
 			continue
 		}
 
-		d, err := extractEnvVarName(filePath)
+		d, err := readEnvVarName(filePath)
 		if err != nil {
 			return fmt.Errorf("could not extract environment variables from %s, reason: %w", filePath, err)
 		}
@@ -145,8 +154,8 @@ func Parse(dns string) (*DataSourceMapper, error) {
 	return &ds, nil
 }
 
-// extractEnvVarName reads environment variables from the file
-func extractEnvVarName(filePath string) (map[string]string, error) {
+// readEnvVarName reads environment variables from the file
+func readEnvVarName(filePath string) (map[string]string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return nil, err

@@ -81,6 +81,9 @@ func (dsm *DataSourceMapper) Option(name string, defaultValue ...string) string 
 }
 
 func (dsm *DataSourceMapper) SetOption(name string, value string) {
+	if *dsm == nil {
+		*dsm = make(map[string]string, 6)
+	}
 	(*dsm)[name] = value
 }
 
